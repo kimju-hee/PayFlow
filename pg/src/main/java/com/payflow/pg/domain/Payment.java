@@ -2,32 +2,38 @@ package com.payflow.pg.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "payments")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Payment {
+
     @Id
-    private String tid;
-    private String orderNo;
-    private Long amount;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "order_id")
+    private Long orderId;
 
     @Enumerated(EnumType.STRING)
-    private PaymentState state;
+    @Column(name = "provider", columnDefinition = "ENUM('MOCK','KAKAOPAY','TOSS')")
+    private PaymentProvider provider;
 
-    private String cardTxId;
-    private String failureCode;
+    @Column(name = "pg_tid")
+    private String pgTid;
 
-    @CreationTimestamp
+    @Enumerated(EnumType.STRING)
+    private PaymentState status;
+
+    private LocalDateTime approvedAt;
+
+    @Column(name = "signature_valid")
+    private Boolean signatureValid;
+
+    @Column(columnDefinition = "json")
+    private String rawPayload;
+
+    @Column(name = "created_at", updatable = false, insertable = false)
     private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
 }

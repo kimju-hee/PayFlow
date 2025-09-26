@@ -26,7 +26,7 @@ public class PaymentController {
         return service.ready(req);
     }
 
-    @Operation(summary = "결제 승인", description = "승인 처리 후 상태 반환")
+    @Operation(summary = "결제 승인", description = "카드사 승인 후 결과 반환 및 웹훅 발송")
     @ApiResponse(responseCode = "200", description = "성공")
     @PostMapping("/approve")
     public ApproveResponse approve(@Valid @RequestBody ApproveRequest req) {
