@@ -1,6 +1,6 @@
 package com.payflow.merchant.service;
 
-import com.payflow.merchant.domain.User;
+import com.payflow.merchant.domain.UserAccount;            // ✅ 변경
 import com.payflow.merchant.dto.auth.*;
 import com.payflow.merchant.repository.UserRepository;
 import com.payflow.merchant.security.JwtUtil;
@@ -25,9 +25,11 @@ public class AuthService {
         if (userRepo.existsByEmail(req.email())) {
             throw new IllegalArgumentException("EMAIL_ALREADY_EXISTS");
         }
-        User u = new User();
-        u.setEmail(req.email());
-        u.setPassword(encoder.encode(req.password()));
+        UserAccount u = UserAccount.builder()                // ✅ UserAccount 사용
+                .email(req.email())
+                .password(encoder.encode(req.password()))
+                .roles("USER")
+                .build();
         userRepo.save(u);
         return new SignupResponse(u.getId(), u.getEmail());
     }

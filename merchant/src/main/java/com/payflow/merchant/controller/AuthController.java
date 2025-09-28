@@ -1,6 +1,6 @@
 package com.payflow.merchant.controller;
 
-import com.payflow.merchant.domain.User;
+import com.payflow.merchant.domain.UserAccount;               // ✅ 변경
 import com.payflow.merchant.dto.auth.*;
 import com.payflow.merchant.repository.UserRepository;
 import com.payflow.merchant.security.JwtUtil;
@@ -32,7 +32,7 @@ public class AuthController {
                                                HttpServletResponse res) {
         Authentication auth = authService.login(req);
         String email = auth.getName();
-        User u = userRepo.findByEmail(email).orElseThrow(); // 존재 보장됨(인증 성공)
+        UserAccount u = userRepo.findByEmail(email).orElseThrow(); // ✅ 타입 변경
         Long userId = u.getId();
 
         String accessToken = jwtUtil.generateAccessToken(userId, email);
@@ -41,7 +41,7 @@ public class AuthController {
         Cookie rt = new Cookie("refreshToken", refreshToken);
         rt.setHttpOnly(true);
         rt.setPath("/");
-        rt.setMaxAge(60 * 60 * 24 * 14); // 14일
+        rt.setMaxAge(60 * 60 * 24 * 14);
         res.addCookie(rt);
 
         return ResponseEntity.ok(new TokenResponse(accessToken));
@@ -50,7 +50,7 @@ public class AuthController {
     @PostMapping("/token/refresh")
     public ResponseEntity<TokenResponse> refresh(@CookieValue("refreshToken") String refreshToken) {
         Long userId = jwtUtil.parseRefreshToken(refreshToken);
-        User u = userRepo.findById(userId).orElseThrow();
+        UserAccount u = userRepo.findById(userId).orElseThrow();   // ✅ 타입 변경
         String newAT = jwtUtil.generateAccessToken(userId, u.getEmail());
         return ResponseEntity.ok(new TokenResponse(newAT));
     }
