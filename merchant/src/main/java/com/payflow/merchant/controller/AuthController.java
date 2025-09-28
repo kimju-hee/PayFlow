@@ -1,4 +1,4 @@
-package com.payflow.merchant.api;
+package com.payflow.merchant.controller;
 
 import com.payflow.merchant.domain.User;
 import com.payflow.merchant.dto.auth.*;
