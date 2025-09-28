@@ -2,38 +2,72 @@ package com.payflow.pg.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-@Table(name = "payments")
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+@Table(name = "payments", indexes = {
+        @Index(name = "uk_payments_tid", columnList = "pg_tid", unique = true)
+})
 public class Payment {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "order_id")
-    private Long orderId;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "provider", columnDefinition = "ENUM('MOCK','KAKAOPAY','TOSS')")
-    private PaymentProvider provider;
+    @Column(nullable = false)
+    private Provider provider;
 
-    @Column(name = "pg_tid")
+    @Column(name = "pg_tid", length = 64, nullable = false)
     private String pgTid;
 
     @Enumerated(EnumType.STRING)
-    private PaymentState status;
+    @Column(nullable = false)
+    private Status status;
 
     private LocalDateTime approvedAt;
 
-    @Column(name = "signature_valid")
-    private Boolean signatureValid;
+    @Column(nullable = false)
+    private boolean signatureValid;
 
     @Column(columnDefinition = "json")
     private String rawPayload;
 
-    @Column(name = "created_at", updatable = false, insertable = false)
+    @CreationTimestamp
+    @Column(nullable = false)
     private LocalDateTime createdAt;
+
+    @Column(nullable = false)
+    private String tid;
+
+    private BigDecimal amount;
+
+    private String cardTxId;
+
+    private String failureCode;
+
+    @Column(name = "order_no")
+    private String orderNo;
+
+    private String state;
+
+    @Column(name = "callback_url", length = 512)
+    private String callbackUrl;
+
+    @Column(name = "card_auth_code")
+    private String cardAuthCode;
+
+    @Column(name = "card_ref_no")
+    private String cardRefNo;
+
+    private LocalDateTime updatedAt;
+
+    public enum Provider { MOCK, KAKAOPAY, TOSS }
+    public enum Status { READY, APPROVED, FAILED, CANCELLED }
 }

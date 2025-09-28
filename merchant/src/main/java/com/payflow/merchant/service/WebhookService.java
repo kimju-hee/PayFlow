@@ -24,8 +24,7 @@ public class WebhookService {
     private final StringRedisTemplate redis;
     private final ObjectMapper om = new ObjectMapper();
 
-    @Value("${payflow.webhook.secret}")
-    private String secret;
+    @Value("${payflow.webhook.secret}") private String secret;
 
     @Transactional
     public void handle(String rawBody, String signature) {
@@ -36,9 +35,9 @@ public class WebhookService {
         try { payload = om.readValue(rawBody, PgWebhookPayload.class); }
         catch (Exception e) { throw new IllegalArgumentException("invalid_payload"); }
 
-        String dedupKey = "wh:merchant:" + payload.event() + ":" + payload.tid();
-        Boolean ok = redis.opsForValue().setIfAbsent(dedupKey, "1");
-        if (Boolean.FALSE.equals(ok)) return;
+        String key = "wh:merchant:" + payload.event() + ":" + payload.tid();
+        Boolean first = redis.opsForValue().setIfAbsent(key, "1");
+        if (Boolean.FALSE.equals(first)) return; // 이미 처리됨
 
         if ("PAYMENT.APPROVED".equals(payload.event())) {
             MerchantPayment mp = pays.findByOrderNo(payload.orderNo()).orElseGet(MerchantPayment::new);
@@ -47,26 +46,27 @@ public class WebhookService {
             mp.setState("APPROVED");
             pays.save(mp);
 
-            Long orderId = extractOrderIdFromOrderNo(payload.orderNo());
-            invoices.findByOrderId(orderId).orElseGet(() -> {
-                Invoice inv = Invoice.builder()
-                        .orderId(orderId)
-                        .invoiceNo(genInvoiceNo(orderId))
-                        .amount(payload.amount())
-                        .issuedAt(parseOrNow(payload.approvedAt()))
-                        .build();
-                return invoices.save(inv);
+            Long orderId = extractOrderId(payload.orderNo());
+            invoices.findByOrderId(orderId).orElseGet(() -> invoices.save(
+                    Invoice.builder()
+                            .orderId(orderId)
+                            .invoiceNo("INV-" + String.format("%06d", orderId))
+                            .amount(payload.amount())
+                            .issuedAt(parseTs(payload.approvedAt()))
+                            .build()
+            ));
+        } else if ("PAYMENT.FAILED".equals(payload.event())) {
+            pays.findByOrderNo(payload.orderNo()).ifPresent(mp -> {
+                mp.setState("FAILED");
+                pays.save(mp);
             });
         }
     }
 
-    private String genInvoiceNo(Long orderId) { return "INV-" + String.format("%06d", orderId); }
-
-    private OffsetDateTime parseOrNow(String s) {
+    private OffsetDateTime parseTs(String s) {
         try { return OffsetDateTime.parse(s); } catch (DateTimeParseException e) { return OffsetDateTime.now(); }
     }
-
-    private Long extractOrderIdFromOrderNo(String orderNo) {
+    private Long extractOrderId(String orderNo) {
         try { return Long.parseLong(orderNo.substring(orderNo.lastIndexOf('-') + 1)); }
         catch (Exception e) { throw new IllegalStateException("order_id_parse_error"); }
     }

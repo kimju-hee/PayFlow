@@ -1,17 +1,5 @@
 package com.payflow.pg.dto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
-
-@Getter
-@Setter
-public class ApproveRequest {
-    @NotBlank
-    private String tid;
-    @NotBlank
-    private String cardNoMasked;
-    @NotNull
-    private Long amount;
+public record ApproveRequest(String tid, Card card) {
+    public record Card(String number, String expiry, String cvc) {}
 }

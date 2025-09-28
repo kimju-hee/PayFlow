@@ -1,4 +1,4 @@
-package com.payflow.pg.infra;
+package com.payflow.pg.card;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,7 +8,7 @@ import org.springframework.web.client.RestClient;
 
 import java.math.BigDecimal;
 
-@Component("cardHttpClient")
+@Component
 @RequiredArgsConstructor
 public class CardClient {
     private final RestClient rest;
@@ -23,5 +23,6 @@ public class CardClient {
     }
 
     public record AuthorizeReq(BigDecimal amount, String merchantName, String tid) {}
+
     public record AuthorizeRes(String result, String refNo, String authCode, String approvedAt, String reason) {}
 }

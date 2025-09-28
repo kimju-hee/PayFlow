@@ -21,7 +21,7 @@ public class WebhookClient {
     }
 
     public void send(WebhookPayload payload) {
-        String signature = sign(payload.getTid() + "|" + payload.getOrderNo() + "|" + payload.getAmount() + "|" + payload.getState());
+        String signature = sign(payload.tid() + "|" + payload.orderNo() + "|" + payload.amount() + "|" + payload.state());
         try {
             rest.post().uri("")
                     .contentType(MediaType.APPLICATION_JSON)

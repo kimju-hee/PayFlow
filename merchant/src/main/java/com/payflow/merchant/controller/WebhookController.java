@@ -13,7 +13,8 @@ public class WebhookController {
     private final WebhookService service;
 
     @PostMapping(value = "/webhook", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    public WebhookAck handle(@RequestBody String rawBody, @RequestHeader("X-Payflow-Signature") String sig) {
+    public WebhookAck handle(@RequestBody String rawBody,
+                             @RequestHeader("X-Payflow-Signature") String sig) {
         service.handle(rawBody, sig);
         return new WebhookAck(true);
     }
