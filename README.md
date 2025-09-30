@@ -2,7 +2,7 @@
 ## 분산 시스템 환경 기반 모의 결제 시스템 
 
 <p align="center">
-  <img src="./image/logo.png" alt="Logo" width="300" style="object-fit: cover; height:80px;"/>
+  <img src="./image/logo.png" alt="Logo" width="300" style="object-fit: cover; height:250px;"/>
 </p>
 
 ---
